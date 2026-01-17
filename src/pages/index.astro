@@ -1,0 +1,13 @@
+---
+/**
+ * Dashboard Page
+ * Main entry point for the Learning Lanes application
+ * Uses React Island for interactivity while keeping SSR benefits
+ */
+import Layout from '../layouts/Layout.astro';
+import Dashboard from '../components/Dashboard';
+---
+
+<Layout title="Learning Lanes">
+  <Dashboard client:load />
+</Layout>

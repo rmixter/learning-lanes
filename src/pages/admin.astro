@@ -1,0 +1,12 @@
+---
+/**
+ * Admin Dashboard Page
+ * Only accessible to admin users
+ */
+import Layout from '../layouts/Layout.astro';
+import AdminDashboard from '../components/admin/AdminDashboard';
+---
+
+<Layout title="Admin - Learning Lanes">
+  <AdminDashboard client:load />
+</Layout>
