@@ -207,7 +207,7 @@ export default function ProfileSwitcher({ onProfileSelected }: ProfileSwitcherPr
         <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-2">
           Learning Lanes
         </h1>
-        <p className="text-gray-400 text-lg">Who's watching?</p>
+        <p className="text-gray-400 text-lg">Who's learning?</p>
       </div>
 
       {/* Profiles Grid */}
