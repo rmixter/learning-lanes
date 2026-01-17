@@ -43,6 +43,7 @@ const profiles = [
     avatarUrl: '',
     role: 'admin' as const,
     pin: '1234', // Simple PIN for demo
+    ageLevel: 'adult' as const,
   },
   {
     id: 'profile-link',
@@ -50,6 +51,7 @@ const profiles = [
     avatarUrl: '',
     role: 'child' as const,
     pin: null,
+    ageLevel: 'elementary' as const, // 6-12 years
   },
   {
     id: 'profile-fox',
@@ -57,6 +59,7 @@ const profiles = [
     avatarUrl: '',
     role: 'child' as const,
     pin: null,
+    ageLevel: 'preschool' as const, // 3-5 years
   },
 ];
 

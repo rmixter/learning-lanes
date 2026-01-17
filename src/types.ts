@@ -6,6 +6,14 @@
 // Profile roles
 export type ProfileRole = 'admin' | 'child';
 
+// Age levels for content filtering
+export type AgeLevel = 
+  | 'toddler'     // 0-3 years
+  | 'preschool'   // 3-5 years
+  | 'elementary'  // 6-12 years
+  | 'teen'        // 13-17 years
+  | 'adult';      // 18+ unrestricted
+
 // Lane categories
 export type LaneCategory = 
   | 'School' 
@@ -31,6 +39,7 @@ export interface Profile {
   avatarUrl: string;
   role: ProfileRole;
   pin: string | null; // Required for admin access, null for children
+  ageLevel: AgeLevel; // Age-appropriate content filtering
 }
 
 /**

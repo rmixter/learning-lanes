@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                     <div className="text-left">
                       <p className="font-medium">{profile.displayName}</p>
                       <p className="text-xs text-gray-500">
-                        {profile.role === 'admin' ? 'Admin' : 'Child'}
+                        {profile.role === 'admin' ? 'Admin' : `Child • ${profile.ageLevel || 'No age set'}`}
                       </p>
                     </div>
                   </button>

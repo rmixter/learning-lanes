@@ -3,26 +3,63 @@ import { createAIProvider, type GenerateLaneRequest, type LaneSuggestion, type V
 import { YouTubeAPI, type YouTubeVideoDetails, formatDuration } from './youtube';
 
 // Trusted channels that are known to be kid-friendly and high-quality
-const TRUSTED_CHANNELS = [
-  'Numberblocks',
-  'Art for Kids Hub',
-  'National Geographic Kids',
-  'SciShow Kids',
-  'Crash Course Kids',
-  'PBS Kids',
-  'Sesame Street',
-  'Khan Academy',
-  'Peekaboo Kidz',
-  'Free School',
-  'Fun Kids English',
-  'Super Simple Songs',
-  'Cocomelon',
-  'BabyBus',
-  'Little Baby Bum',
-  'The Kids Picture Show',
-  'Blippi',
-  'StoryBots',
-];
+// Organized by age level
+const TRUSTED_CHANNELS_BY_AGE = {
+  toddler: [
+    'Cocomelon',
+    'Super Simple Songs',
+    'Little Baby Bum',
+    'BabyBus',
+    'Pinkfong',
+    'Dave and Ava',
+  ],
+  preschool: [
+    'Numberblocks',
+    'Sesame Street',
+    'PBS Kids',
+    'Blippi',
+    'StoryBots',
+    'Super Simple Songs',
+    'Art for Kids Hub',
+    'The Kids Picture Show',
+  ],
+  elementary: [
+    'Khan Academy',
+    'National Geographic Kids',
+    'SciShow Kids',
+    'Crash Course Kids',
+    'Free School',
+    'Peekaboo Kidz',
+    'Art for Kids Hub',
+    'Fun Kids English',
+    'Numberblocks',
+    'StoryBots',
+  ],
+  teen: [
+    'Khan Academy',
+    'Crash Course',
+    'TED-Ed',
+    'Vsauce',
+    'Kurzgesagt',
+    'Veritasium',
+    'MinutePhysics',
+    'AsapSCIENCE',
+    'SciShow',
+    'National Geographic',
+  ],
+  adult: [
+    // No restrictions for adult content
+  ],
+};
+
+// Age-specific content guidelines
+const AGE_GUIDELINES = {
+  toddler: 'Simple songs, basic colors, numbers, shapes. Very short (2-5 min). Bright, engaging, repetitive.',
+  preschool: 'Educational songs, basic counting, letters, simple science. Short (3-10 min). Fun and colorful.',
+  elementary: 'Educational content, science experiments, math concepts, history, art tutorials. Medium length (5-15 min).',
+  teen: 'In-depth educational content, advanced concepts, documentaries, critical thinking. Any appropriate length.',
+  adult: 'Unrestricted educational content. All topics and complexities.',
+};
 
 interface GeneratedLane {
   title: string;
@@ -55,14 +92,24 @@ export class LaneGenerator {
   }
 
   async generate(request: GenerateLaneRequest): Promise<GeneratedLane> {
-    const { prompt, targetAge, maxVideos = 8, profileName } = request;
+    const { prompt, targetAge, ageLevel = 'elementary', maxVideos = 8, profileName } = request;
+
+    // Get age-specific guidelines and channels
+    const ageGuideline = AGE_GUIDELINES[ageLevel];
+    const trustedChannels = TRUSTED_CHANNELS_BY_AGE[ageLevel];
 
     // Step 1: Use AI to generate search queries and lane metadata
     const ai = createAIProvider('gemini', this.geminiApiKey);
     
-    const planningPrompt = `You are helping create a curated educational video lane for a child${profileName ? ` named ${profileName}` : ''}${targetAge ? ` who is around ${targetAge} years old` : ''}.
+    const ageDescription = targetAge 
+      ? `around ${targetAge} years old` 
+      : `at the ${ageLevel} level (${ageGuideline})`;
+    
+    const planningPrompt = `You are helping create a curated educational video lane for a child${profileName ? ` named ${profileName}` : ''} who is ${ageDescription}.
 
 The parent's request is: "${prompt}"
+
+Content Guidelines for ${ageLevel}: ${ageGuideline}
 
 Generate a JSON response with:
 1. A catchy, kid-friendly title for this lane (max 30 chars)
@@ -72,7 +119,7 @@ Generate a JSON response with:
 
 Focus on:
 - Educational value
-- Age-appropriate content
+- Age-appropriate content (${ageLevel} level)
 - Engaging presentation for kids
 - Variety within the topic
 
@@ -120,6 +167,7 @@ Respond with this exact JSON structure:
 
     // Step 3: Use AI to filter and rank the videos
     const filterPrompt = `You are filtering YouTube videos for a children's educational lane about: "${prompt}"
+Target audience: ${ageLevel} level (${ageGuideline})
 
 Here are the candidate videos:
 ${allVideos.map((v, i) => `
@@ -133,12 +181,12 @@ ${i + 1}. "${v.title}"
 Select the ${maxVideos} best videos for this lane. Consider:
 - Relevance to "${prompt}"
 - Educational quality
-- Age-appropriateness (avoid scary, violent, or inappropriate content)
+- Age-appropriateness for ${ageLevel} level (${ageGuideline})
 - Production quality (prefer established educational channels)
 - Variety (don't pick 5 videos on the exact same sub-topic)
-- Duration (2-15 minutes is ideal for kids)
+- Duration (appropriate for ${ageLevel} level)
 
-Trusted educational channels to prefer: ${TRUSTED_CHANNELS.slice(0, 10).join(', ')}
+${trustedChannels.length > 0 ? `Trusted educational channels to prefer: ${trustedChannels.join(', ')}` : ''}
 
 Respond with this exact JSON structure:
 {

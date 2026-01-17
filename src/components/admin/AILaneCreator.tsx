@@ -77,7 +77,8 @@ export default function AILaneCreator({ profile, onClose, onSuccess }: AILaneCre
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: prompt.trim(),
-          profileName: profile.name,
+          profileName: profile.displayName,
+          ageLevel: profile.ageLevel || 'elementary',
           maxVideos,
         }),
       });

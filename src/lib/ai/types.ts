@@ -39,6 +39,7 @@ export interface LaneSuggestion {
 export interface GenerateLaneRequest {
   prompt: string;
   targetAge?: number;
+  ageLevel?: 'toddler' | 'preschool' | 'elementary' | 'teen' | 'adult';
   maxVideos?: number;
   profileName?: string;
 }
