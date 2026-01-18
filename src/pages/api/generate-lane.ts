@@ -9,7 +9,7 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { prompt, profileName, targetAge, maxVideos } = body;
+    const { prompt, profileName, targetAge, ageLevel, maxVideos } = body;
 
     if (!prompt || typeof prompt !== 'string') {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -41,6 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
       prompt,
       profileName,
       targetAge: targetAge ? parseInt(targetAge, 10) : undefined,
+      ageLevel: ageLevel || 'elementary', // Default to elementary if not provided
       maxVideos: maxVideos ? parseInt(maxVideos, 10) : 8,
     });
 
