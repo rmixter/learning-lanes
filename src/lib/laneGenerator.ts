@@ -142,14 +142,20 @@ Respond with this exact JSON structure:
     const allVideos: YouTubeVideoDetails[] = [];
     const seenVideoIds = new Set<string>();
 
+    // Determine search parameters based on age level
+    const isAdultContent = ageLevel === 'adult';
+    const searchSuffix = isAdultContent ? '' : ' for kids educational';
+    const safeSearch = isAdultContent ? 'none' : 'strict';
+    const videoDuration = isAdultContent ? 'any' : 'medium'; // Adults can handle any length
+
     for (const query of plan.searchQueries.slice(0, 4)) {
       try {
         const videos = await this.youtube.searchWithDetails(
-          `${query} for kids educational`,
+          `${query}${searchSuffix}`,
           {
-            maxResults: 5, // Reduced from 8 to get fewer total videos
-            safeSearch: 'strict',
-            videoDuration: 'medium', // 4-20 minutes - good for kids
+            maxResults: 5,
+            safeSearch,
+            videoDuration,
             order: 'relevance',
           }
         );
@@ -166,8 +172,12 @@ Respond with this exact JSON structure:
     }
 
     // Step 3: Use AI to filter and rank the videos
-    const filterPrompt = `You are filtering YouTube videos for a children's educational lane about: "${prompt}"
-Target audience: ${ageLevel} level (${ageGuideline})
+    const audienceDescription = isAdultContent 
+      ? 'an adult learner' 
+      : `a child at the ${ageLevel} level`;
+    
+    const filterPrompt = `You are filtering YouTube videos for an educational lane about: "${prompt}"
+Target audience: ${audienceDescription} (${ageGuideline})
 
 Here are the candidate videos:
 ${allVideos.map((v, i) => `
@@ -181,12 +191,12 @@ ${i + 1}. "${v.title}"
 Select the ${maxVideos} best videos for this lane. Consider:
 - Relevance to "${prompt}"
 - Educational quality
-- Age-appropriateness for ${ageLevel} level (${ageGuideline})
+- Age-appropriateness for ${audienceDescription}
 - Production quality (prefer established educational channels)
 - Variety (don't pick 5 videos on the exact same sub-topic)
-- Duration (appropriate for ${ageLevel} level)
+- Depth and complexity appropriate for ${ageLevel} level
 
-${trustedChannels.length > 0 ? `Trusted educational channels to prefer: ${trustedChannels.join(', ')}` : ''}
+${trustedChannels.length > 0 ? `Preferred educational channels: ${trustedChannels.join(', ')}` : 'Select from reputable educational channels and creators.'}
 
 Respond with this exact JSON structure:
 {
@@ -200,7 +210,9 @@ Respond with this exact JSON structure:
 }
 
 IMPORTANT: Keep each "reason" to ONE SHORT SENTENCE (max 15 words).
-Only include videos that are truly appropriate and educational. If a video seems questionable, don't include it.`;
+${isAdultContent 
+  ? 'Select advanced, in-depth content appropriate for adult learners. Avoid basic/introductory content.' 
+  : 'Only include videos that are truly appropriate and educational for children. If a video seems questionable, don\'t include it.'}`;
 
     const filterResult = await ai.generateJSON<{
       selectedVideos: Array<{
